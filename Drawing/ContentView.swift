@@ -20,11 +20,55 @@ struct Triangle: Shape {
 	}
 }
 
+struct Arc: Shape {
+	var startAngle: Angle
+	var endAngle: Angle
+	var clockwise: Bool
+	
+	func path(in rect: CGRect) -> Path {
+		let rotationAdjustment = Angle.degrees(90)
+		let modifiedStart = startAngle - rotationAdjustment
+		let modifiedEnd = endAngle - rotationAdjustment
+		
+		var path = Path()
+		path.addArc(center: CGPoint(x: rect.midX, y: rect.midY), radius: rect.width/2, startAngle: modifiedStart, endAngle: modifiedEnd, clockwise: !clockwise)
+		
+		return path
+	}
+}
+
+struct InsettableArc: InsettableShape {
+	var startAngle: Angle
+	var endAngle: Angle
+	var clockwise: Bool
+	var insetAmount: CGFloat = 0
+	
+	func path(in rect: CGRect) -> Path {
+		let rotationAdjustment = Angle.degrees(90)
+		let modifiedStart = startAngle - rotationAdjustment
+		let modifiedEnd = endAngle - rotationAdjustment
+		
+		var path = Path()
+		path.addArc(center: CGPoint(x: rect.midX, y: rect.midY), radius: rect.width / 2 - insetAmount, startAngle: modifiedStart, endAngle: modifiedEnd, clockwise: !clockwise)
+		
+		return path
+	}
+	
+	func inset(by amount: CGFloat) -> some InsettableShape {
+		var arc = self
+		arc.insetAmount += amount
+		return arc
+	}
+}
+
 struct ContentView: View {
     var body: some View {
-		Triangle()
-			.stroke(Color.purple, style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-			.frame(width: 300, height: 300)
+		InsettableArc(startAngle: .degrees(-90), endAngle: .degrees(90), clockwise: true)
+			.strokeBorder(Color.blue, lineWidth: 40)
+		
+//		Triangle()
+//			.stroke(Color.purple, style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+//			.frame(width: 300, height: 300)
 
     }
 }
